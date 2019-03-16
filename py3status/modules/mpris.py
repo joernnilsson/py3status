@@ -2,15 +2,7 @@
 """
 Display song/video and control MPRIS compatible players.
 
-There are two ways to control the media player. Either by clicking with a mouse
-button in the text information or by using buttons. For former you have
-to define the button parameters in your config.
-
 Configuration parameters:
-    button_next: mouse button to play the next entry (default 4)
-    button_previous: mouse button to play the previous entry (default 5)
-    button_stop: mouse button to stop the player (default None)
-    button_toggle: mouse button to toggle between play and pause mode (default 1)
     format: see placeholders below
         (default '{previous}{toggle}{next} {state} [{artist} - ][{title}]')
     format_none: define output if no player is running
@@ -130,10 +122,6 @@ class Py3status:
     """
 
     # available configuration parameters
-    button_next = 4
-    button_previous = 5
-    button_stop = None
-    button_toggle = 1
     format = "{previous}{toggle}{next} {state} [{artist} - ][{title}]"
     format_none = "no player running"
     icon_next = u" » "
@@ -145,6 +133,16 @@ class Py3status:
     state_pause = u"▮"
     state_play = u"▶"
     state_stop = u"◾"
+
+    class Meta:
+        deprecated = {
+            "remove": [
+                {"param": "button_next", "msg": "obsolete parameter"},
+                {"param": "button_previous", "msg": "obsolete parameter"},
+                {"param": "button_stop", "msg": "obsolete parameter"},
+                {"param": "button_toggle", "msg": "obsolete parameter"},
+            ]
+        }
 
     def post_config_hook(self):
         self._dbus = None
@@ -559,19 +557,7 @@ class Py3status:
         """
         index = event["index"]
         button = event["button"]
-
-        if index not in self._control_states.keys():
-            if button == self.button_toggle:
-                index = "toggle"
-            elif button == self.button_stop:
-                index = "stop"
-            elif button == self.button_next:
-                index = "next"
-            elif button == self.button_previous:
-                index = "previous"
-            else:
-                return
-        elif button != 1:
+        if button != 1 or isinstance(index, int):
             return
 
         control_state = self._control_states.get(index)
